@@ -222,33 +222,63 @@ async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
 	mask.style.height = '0px'
 	document.body.append(mask)
 
+	// eslint-disable-next-line unicorn/consistent-function-scoping
+	const stealClickEvent = (event: MouseEvent) => {
+		event.preventDefault()
+		console.log('prevented!')
+	}
+	const elements: HTMLElement[] = []
+
+	let timing = performance.now()
+
+	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+	const onMouseMove = (event: MouseEvent) => {
+		const now = performance.now()
+		if (now - timing < 50) {
+			return
+		}
+		timing = now
+		const target = event.target as HTMLElement
+		const parent = target.parentElement ? target.parentElement : target
+		const { left, top, width, height } = parent.getBoundingClientRect()
+		mask.style.width = `${width}px`
+		mask.style.height = `${height}px`
+		mask.style.left = `${left + window.scrollX}px`
+		mask.style.top = `${top + window.scrollY}px`
+		if (elements.filter(element => element.isSameNode(target)).length === 0) {
+			elements.push(target)
+			target.addEventListener('click', stealClickEvent)
+		}
+	}
+
 	try {
 		await new Promise<void>((resolve, reject) => {
 			window.addEventListener('keyup', event => {
 				if (event.key === 'Escape') {
+					document.removeEventListener('click', onMouseClick)
 					reject(new AbortError('Aborted with Escape'))
 				}
 			})
-			document.addEventListener('mousemove', event => {
-				const target = event.target as HTMLElement
-				const parent = target.parentElement ? target.parentElement : target
-				const { left, top, width, height } = parent.getBoundingClientRect()
-				mask.style.width = `${width}px`
-				mask.style.height = `${height}px`
-				mask.style.left = `${left + window.scrollX}px`
-				mask.style.top = `${top + window.scrollY}px`
-			})
-			document.addEventListener('click', event => {
+			document.addEventListener('mousemove', onMouseMove)
+			// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+			const onMouseClick = (event: MouseEvent) => {
 				const target = event.target as HTMLElement
 				if (!target) {
 					return
 				}
 				captureArea = target.parentElement ? target.parentElement : target
+				document.removeEventListener('click', onMouseClick)
 				resolve()
-			})
+			}
+			document.addEventListener('click', onMouseClick)
 		})
 	} finally {
 		mask.remove()
+		document.removeEventListener('mousemove', onMouseMove)
+		// eslint-disable-next-line ban/ban
+		elements.forEach(element => {
+			element.removeEventListener('click', stealClickEvent)
+		})
 	}
 	return captureArea
 }
