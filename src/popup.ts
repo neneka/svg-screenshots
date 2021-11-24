@@ -44,6 +44,9 @@ async function main(): Promise<void> {
 		.querySelector<HTMLButtonElement>('#capture-area-btn')!
 		.addEventListener('click', createCaptureButtonHandler('captureArea'))
 	document
+		.querySelector<HTMLButtonElement>('#capture-element-btn')!
+		.addEventListener('click', createCaptureButtonHandler('captureElement'))
+	document
 		.querySelector<HTMLButtonElement>('#capture-viewport-btn')!
 		.addEventListener('click', createCaptureButtonHandler('captureViewport'))
 
@@ -60,7 +63,7 @@ async function main(): Promise<void> {
 				element instanceof HTMLInputElement && element.type === 'checkbox',
 				'Expected element to be checkbox'
 			)
-			const checkbox = element as HTMLInputElement
+			const checkbox = element
 			checkbox.checked = value
 		} else if (typeof value === 'string') {
 			assert(element instanceof RadioNodeList, 'Expected element to be RadioNodeList')

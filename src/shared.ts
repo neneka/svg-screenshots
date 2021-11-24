@@ -1,4 +1,4 @@
-export type CaptureArea = 'captureArea' | 'captureViewport'
+export type CaptureArea = 'captureArea' | 'captureViewport' | 'captureElement'
 export type Target = 'download' | 'tab' | 'clipboard'
 
 export const SETTINGS_KEYS: readonly (keyof Settings)[] = [

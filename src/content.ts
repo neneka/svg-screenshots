@@ -1,7 +1,7 @@
 import './polyfill'
 
 import delay from 'delay'
-import { documentToSVG } from 'dom-to-svg'
+import { documentToSVG, elementToSVG } from 'dom-to-svg'
 import { saveAs } from 'file-saver'
 import prettyBytes from 'pretty-bytes'
 import formatXML from 'xml-formatter'
@@ -41,6 +41,7 @@ async function main(): Promise<void> {
 async function capture(area: CaptureArea): Promise<void> {
 	console.log('Capturing', area)
 
+	const captureElement = area === 'captureElement' ? await letUserSelectCaptureElement() : undefined
 	const captureArea = area === 'captureArea' ? await letUserSelectCaptureArea() : undefined
 
 	document.documentElement.style.cursor = 'wait'
@@ -50,10 +51,18 @@ async function capture(area: CaptureArea): Promise<void> {
 
 		const settings = applyDefaults((await browser.storage.sync.get(SETTINGS_KEYS)) as Settings)
 
-		const svgDocument = documentToSVG(document, {
-			captureArea,
-			keepLinks: settings.keepLinks,
-		})
+		const svgDocument = captureElement
+			? elementToSVG(captureElement, { keepLinks: settings.keepLinks })
+			: documentToSVG(document, {
+					captureArea,
+					keepLinks: settings.keepLinks,
+			  })
+
+		if (captureElement) {
+			const color = getComputedStyle(captureElement)
+			console.log(color)
+			svgDocument.querySelector('svg')!.style.backgroundColor = color.backgroundColor
+		}
 
 		let svgString = new XMLSerializer().serializeToString(svgDocument)
 
@@ -189,6 +198,50 @@ async function letUserSelectCaptureArea(): Promise<DOMRectReadOnly> {
 		svgElement.remove()
 	}
 
+	return captureArea
+}
+
+async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
+	let captureArea: HTMLElement | undefined
+
+	const mask = document.createElement('div')
+	mask.id = 'svg-screenshot-cutout'
+	mask.style.zIndex = '99999999'
+	mask.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+	mask.style.border = '1px solid black'
+	mask.style.position = 'absolute'
+	mask.style.pointerEvents = 'none'
+	mask.style.width = '0px'
+	mask.style.height = '0px'
+	document.body.append(mask)
+
+	try {
+		await new Promise<void>((resolve, reject) => {
+			window.addEventListener('keyup', event => {
+				if (event.key === 'Escape') {
+					reject(new AbortError('Aborted with Escape'))
+				}
+			})
+			document.addEventListener('mousemove', event => {
+				const target = event.target as HTMLElement
+				const { left, top, width, height } = target.getBoundingClientRect()
+				mask.style.width = `${width}px`
+				mask.style.height = `${height}px`
+				mask.style.left = `${left + window.scrollX}px`
+				mask.style.top = `${top + window.scrollY}px`
+			})
+			document.addEventListener('click', event => {
+				const target = event.target as HTMLElement
+				if (!target) {
+					return
+				}
+				captureArea = target
+				resolve()
+			})
+		})
+	} finally {
+		mask.remove()
+	}
 	return captureArea
 }
 
