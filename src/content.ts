@@ -222,7 +222,6 @@ async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
 	mask.style.height = '0px'
 	document.body.append(mask)
 
-	// eslint-disable-next-line unicorn/consistent-function-scoping
 	const stealClickEvent = (event: MouseEvent) => {
 		event.preventDefault()
 		console.log('prevented!')
@@ -231,7 +230,6 @@ async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
 
 	let timing = performance.now()
 
-	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 	const onMouseMove = (event: MouseEvent) => {
 		const now = performance.now()
 		if (now - timing < 50) {
@@ -260,7 +258,6 @@ async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
 				}
 			})
 			document.addEventListener('mousemove', onMouseMove)
-			// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 			const onMouseClick = (event: MouseEvent) => {
 				const target = event.target as HTMLElement
 				if (!target) {
@@ -275,7 +272,6 @@ async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
 	} finally {
 		mask.remove()
 		document.removeEventListener('mousemove', onMouseMove)
-		// eslint-disable-next-line ban/ban
 		elements.forEach(element => {
 			element.removeEventListener('click', stealClickEvent)
 		})

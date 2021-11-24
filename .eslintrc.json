@@ -2,5 +2,10 @@
 	"extends": "@sourcegraph/eslint-config",
 	"parserOptions": {
 		"project": "tsconfig.json"
+	},
+	"rules": {
+		"unicorn/consistent-function-scoping": "off",
+		"@typescript-eslint/explicit-function-return-type": "off",
+		"ban/ban": "off"
 	}
 }
