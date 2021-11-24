@@ -231,7 +231,8 @@ async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
 			})
 			document.addEventListener('mousemove', event => {
 				const target = event.target as HTMLElement
-				const { left, top, width, height } = target.getBoundingClientRect()
+				const parent = target.parentElement ? target.parentElement : target
+				const { left, top, width, height } = parent.getBoundingClientRect()
 				mask.style.width = `${width}px`
 				mask.style.height = `${height}px`
 				mask.style.left = `${left + window.scrollX}px`
@@ -242,7 +243,7 @@ async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
 				if (!target) {
 					return
 				}
-				captureArea = target
+				captureArea = target.parentElement ? target.parentElement : target
 				resolve()
 			})
 		})
