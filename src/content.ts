@@ -59,9 +59,8 @@ async function capture(area: CaptureArea): Promise<void> {
 			  })
 
 		if (captureElement) {
-			const color = getComputedStyle(captureElement)
-			console.log(color)
-			svgDocument.querySelector('svg')!.style.backgroundColor = color.backgroundColor
+			const color = realBackgroundColor(captureElement)
+			svgDocument.querySelector('svg')!.style.backgroundColor = color
 		}
 
 		let svgString = new XMLSerializer().serializeToString(svgDocument)
@@ -201,13 +200,21 @@ async function letUserSelectCaptureArea(): Promise<DOMRectReadOnly> {
 	return captureArea
 }
 
+function realBackgroundColor(element: HTMLElement): string {
+	const background = getComputedStyle(element).backgroundColor
+	if ((background === 'rgba(0, 0, 0, 0)' || background === 'transparent') && element.parentElement) {
+		return realBackgroundColor(element.parentElement)
+	}
+	return background
+}
+
 async function letUserSelectCaptureElement(): Promise<HTMLElement | undefined> {
 	let captureArea: HTMLElement | undefined
 
 	const mask = document.createElement('div')
 	mask.id = 'svg-screenshot-cutout'
 	mask.style.zIndex = '99999999'
-	mask.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+	mask.style.backgroundColor = 'rgba(107, 184, 237, 0.5)'
 	mask.style.border = '1px solid black'
 	mask.style.position = 'absolute'
 	mask.style.pointerEvents = 'none'
