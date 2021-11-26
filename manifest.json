@@ -3,7 +3,7 @@
 	"name": "SVG Screenshot",
 	"description": "Take scalable, semantic, accessible screenshots, in SVG format.",
 	"version": "0.0.0",
-	"permissions": ["activeTab", "<all_urls>", "storage"],
+	"permissions": ["activeTab", "<all_urls>", "storage", "https://*.cloud-object-storage.appdomain.cloud/*"],
 	"icons": {
 		"128": "/images/icon_128.png",
 		"256": "/images/icon_256.png"

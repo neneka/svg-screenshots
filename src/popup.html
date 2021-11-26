@@ -37,7 +37,20 @@
 				<div>
 					<label><input type="radio" name="target" value="clipboard" /> Copy SVG to clipboard</label>
 				</div>
+				<div>
+					<label><input type="radio" name="target" value="upload-s3" /> Upload to s3</label>
+				</div>
 			</fieldset>
+
+			<div>
+				<h3>s3</h3>
+				<div>
+					<label>bucket: <input type="text" name="s3Bucket" /></label>
+				</div>
+				<div>
+					<label>config(json): <input type="text" name="s3Config" /></label>
+				</div>
+			</div>
 		</form>
 
 		<script src="./popup.ts"></script>

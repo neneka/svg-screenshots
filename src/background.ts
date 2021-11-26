@@ -1,21 +1,26 @@
 import './polyfill'
 
+import { PutObjectCommand, S3Client, S3ClientConfig } from '@aws-sdk/client-s3'
 import { inlineResources } from 'dom-to-svg'
+import { v4 as uuid } from 'uuid'
 
 browser.runtime.onMessage.addListener(async (message, sender) => {
 	const { method, payload } = message
 	switch (method) {
 		// Disable action while a page is capturing
 		case 'started': {
-			await browser.browserAction.disable(sender.tab!.id!)
+			await browser.browserAction.disable(sender.tab!.id)
 			return
 		}
 		case 'finished': {
-			await browser.browserAction.enable(sender.tab!.id!)
+			await browser.browserAction.enable(sender.tab!.id)
 			return
 		}
 		case 'postProcessSVG': {
 			return postProcessSVG(payload)
+		}
+		case 'upload-s3': {
+			return uploadToS3(payload)
 		}
 	}
 })
@@ -32,4 +37,30 @@ async function postProcessSVG(svg: string): Promise<string> {
 		svgRootElement.remove()
 	}
 	return new XMLSerializer().serializeToString(svgRootElement)
+}
+
+async function uploadToS3({
+	svg,
+	s3config,
+	bucket,
+}: {
+	svg: string
+	s3config: S3ClientConfig
+	bucket: string
+}): Promise<string> {
+	const rand: string = uuid()
+	const name = `${rand}.svg`
+	const client = new S3Client(s3config)
+	const command = new PutObjectCommand({
+		Bucket: bucket,
+		Key: name,
+		Body: svg,
+		CacheControl: 'max-age=31536000',
+		ContentType: 'image/svg+xml',
+	})
+	await client.send(command)
+	const url = new URL(s3config.endpoint?.toString() || 'https://s3.amazonaws.com/')
+	url.hostname = `${bucket}.${url.hostname}`
+	url.pathname = name
+	return url.href
 }

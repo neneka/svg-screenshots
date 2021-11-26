@@ -66,7 +66,10 @@ async function main(): Promise<void> {
 			const checkbox = element
 			checkbox.checked = value
 		} else if (typeof value === 'string') {
-			assert(element instanceof RadioNodeList, 'Expected element to be RadioNodeList')
+			assert(
+				element instanceof RadioNodeList || element instanceof HTMLInputElement,
+				'Expected element to be RadioNodeList'
+			)
 			element.value = value
 		}
 	}
@@ -80,6 +83,8 @@ async function main(): Promise<void> {
 			if (target.type === 'checkbox') {
 				await browser.storage.sync.set({ [target.name]: target.checked })
 			} else if (target.type === 'radio') {
+				await browser.storage.sync.set({ [target.name]: target.value })
+			} else if (target.type === 'text') {
 				await browser.storage.sync.set({ [target.name]: target.value })
 			} else {
 				throw new Error(`Unexpected form element ${target.type}`)

@@ -104,6 +104,20 @@ async function capture(area: CaptureArea): Promise<void> {
 			console.log('Opening in new tab')
 			const url = window.URL.createObjectURL(blob)
 			window.open(url, '_blank', 'noopener')
+		} else if (settings.target === 'upload-s3') {
+			console.log('Uploading to S3')
+			const url: string | undefined = await browser.runtime.sendMessage({
+				method: 'upload-s3',
+				payload: {
+					svg: svgString,
+					bucket: settings.s3Bucket,
+					s3config: settings.s3Config ? JSON.parse(settings.s3Config) : undefined,
+				},
+			})
+			console.log('Uploaded to', url)
+			if (url) {
+				await navigator.clipboard.writeText(url)
+			}
 		} else {
 			throw new Error(`Unexpected SVG target ${String(settings.target)}`)
 		}

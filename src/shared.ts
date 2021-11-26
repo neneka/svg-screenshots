@@ -1,5 +1,5 @@
 export type CaptureArea = 'captureArea' | 'captureViewport' | 'captureElement'
-export type Target = 'download' | 'tab' | 'clipboard'
+export type Target = 'download' | 'tab' | 'clipboard' | 'upload-s3'
 
 export const SETTINGS_KEYS: readonly (keyof Settings)[] = [
 	'minifySvg',
@@ -7,6 +7,8 @@ export const SETTINGS_KEYS: readonly (keyof Settings)[] = [
 	'inlineResources',
 	'prettyPrintSvg',
 	'target',
+	's3Bucket',
+	's3Config',
 ]
 
 /**
@@ -18,6 +20,8 @@ export interface Settings {
 	prettyPrintSvg?: boolean
 	keepLinks?: boolean
 	target?: Target
+	s3Bucket?: string
+	s3Config?: string
 }
 
 export const applyDefaults = ({
@@ -26,10 +30,14 @@ export const applyDefaults = ({
 	prettyPrintSvg = true,
 	keepLinks = true,
 	target = 'download',
+	s3Bucket = '',
+	s3Config = '',
 }: Settings): Required<Settings> => ({
 	inlineResources,
 	minifySvg,
 	keepLinks,
 	prettyPrintSvg,
 	target,
+	s3Bucket,
+	s3Config,
 })
